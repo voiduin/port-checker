@@ -53,9 +53,11 @@ def is_rate_limited(ip):
 def port_check():
     ip = request.remote_addr  # Get client IP
     port = request.args.get('port')
-    protocol = request.args.get('protocol', 'tcp').lower()
+    protocol = request.args.get('protocol')
     if not port or not protocol:
         return jsonify({'error': 'Port number and protocol are required'}), 400
+
+    protocol = protocol.lower()
     
     # Delay before processing the request
     # - First request without delay
@@ -73,7 +75,7 @@ def port_check():
 
     status = 'available' if is_open else 'not available'
     return jsonify({
-        'ip': ip,
+        'you_ip': ip,
         'port': port,
         'protocol': protocol,
         'status': status
