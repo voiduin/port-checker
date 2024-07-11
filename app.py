@@ -33,9 +33,14 @@ def port_check():
     port = request.args.get('port')
     if not port:
         return jsonify({'error': 'Port number is required'}), 400
+
+    # Delay before processing the request
+    # - First request without delay
+    # - Second request with 1 second delay
+    # - ... Then up to 4 req
     if is_rate_limited(ip):
         return jsonify({'error': 'Too many requests. Please wait.'}), 429
-    time.sleep(5)  # Delay before processing the request
+
     is_open = check_port(ip, port)
     status = 'available' if is_open else 'not available'
     return jsonify({
