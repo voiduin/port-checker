@@ -1,7 +1,9 @@
-from flask import Flask, request, jsonify
-from scapy.all import IP, TCP, UDP, sr1, Raw
+import json
 from collections import defaultdict
 from datetime import datetime, timedelta
+
+from flask import Flask, Response, jsonify, request
+from scapy.all import IP, TCP, UDP, Raw, sr1
 
 app = Flask(__name__)
 
@@ -65,10 +67,12 @@ def port_check():
     confirmation_data = request.args.get('confirmation_data')
 
     if not port or not protocol:
-        return jsonify({'error': 'Port number and protocol are required'}), 400
+        response = {'error': 'Port number and protocol are required'}
+        return Response(json.dumps(response, indent=4), mimetype='application/json'), 400
 
     if confirmation_data and len(confirmation_data) > 20:
-        return jsonify({'error': 'Confirmation data too long. Maximum length is 20 characters.'}), 400
+        response = {'error': 'Confirmation data too long. Maximum length is 20 characters.'}
+        return Response(json.dumps(response, indent=4), mimetype='application/json'), 400
 
     protocol = protocol.lower()
     
@@ -78,12 +82,14 @@ def port_check():
     # - ... and so on
     rate_limited, wait_time = is_rate_limited(client_ip)
     if rate_limited:
-        return jsonify({'error': 'Too many requests. Please wait.', 'wait_time': f'{wait_time:.2f} seconds'}), 429
+        response = {'error': 'Too many requests. Please wait.', 'wait_time': f'{wait_time:.2f} seconds'}
+        return Response(json.dumps(response, indent=4), mimetype='application/json'), 429
 
     try:
         status = check_port(client_ip, port, protocol, confirmation_data)
     except ValueError as e:
-        return jsonify({'error': str(e)}), 400
+        response = {'error': str(e)}
+        return Response(json.dumps(response, indent=4), mimetype='application/json'), 400
 
     response = {
         'you_ip': client_ip,
@@ -95,7 +101,7 @@ def port_check():
     if confirmation_data:
         response['confirmation_data'] = confirmation_data
 
-    return jsonify(response)
+    return Response(json.dumps(response, indent=4), mimetype='application/json')
 
 if __name__ == '__main__':
     app.run(debug=True)
