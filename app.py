@@ -2,7 +2,7 @@ import json
 from collections import defaultdict
 from datetime import datetime, timedelta
 
-from flask import Flask, Response, jsonify, request
+from flask import Flask, Response, request
 from scapy.all import IP, TCP, UDP, Raw, sr1
 
 app = Flask(__name__)
@@ -65,14 +65,25 @@ def port_check():
     port = request.args.get('port')
     protocol = request.args.get('protocol')
     confirmation_data = request.args.get('confirmation_data')
+    output_format = request.args.get('format', 'json')
 
     if not port or not protocol:
-        response = {'error': 'Port number and protocol are required'}
-        return Response(json.dumps(response, indent=4), mimetype='application/json'), 400
+        if output_format == 'json':
+            response = {'error': 'Port number and protocol are required'}
+            json_response = json.dumps(response, indent=4) + "\n"
+            return Response(json_response, mimetype='application/json'), 400
+        else:
+            response_text = "Error: Port number and protocol are required"
+            return Response(response_text, mimetype='text/plain'), 400
 
     if confirmation_data and len(confirmation_data) > 20:
-        response = {'error': 'Confirmation data too long. Maximum length is 20 characters.'}
-        return Response(json.dumps(response, indent=4), mimetype='application/json'), 400
+        if output_format == 'json':
+            response = {'error': 'Confirmation data too long. Maximum length is 20 characters.'}
+            json_response = json.dumps(response, indent=4) + "\n"
+            return Response(json_response, mimetype='application/json'), 400
+        else:
+            response_text = "Error: Confirmation data too long. Maximum length is 20 characters."
+            return Response(response_text, mimetype='text/plain'), 400
 
     protocol = protocol.lower()
     
@@ -82,26 +93,45 @@ def port_check():
     # - ... and so on
     rate_limited, wait_time = is_rate_limited(client_ip)
     if rate_limited:
-        response = {'error': 'Too many requests. Please wait.', 'wait_time': f'{wait_time:.2f} seconds'}
-        return Response(json.dumps(response, indent=4), mimetype='application/json'), 429
+        if output_format == 'json':
+            response = {'error': 'Too many requests. Please wait.', 'wait_time': f'{wait_time:.2f} seconds'}
+            json_response = json.dumps(response, indent=4) + "\n"
+            return Response(json_response, mimetype='application/json'), 429
+        else:
+            response_text = f"Error: Too many requests. Please wait. Wait time: {wait_time:.2f} seconds"
+            return Response(response_text, mimetype='text/plain'), 429
 
     try:
         status = check_port(client_ip, port, protocol, confirmation_data)
     except ValueError as e:
-        response = {'error': str(e)}
-        return Response(json.dumps(response, indent=4), mimetype='application/json'), 400
+        if output_format == 'json':
+            response = {'error': str(e)}
+            json_response = json.dumps(response, indent=4) + "\n"
+            return Response(json_response, mimetype='application/json'), 400
+        else:
+            response_text = f"Error: {str(e)}"
+            return Response(response_text, mimetype='text/plain'), 400
 
     response = {
         'you_ip': client_ip,
-        'port': port,
-        'protocol': protocol,
-        'status': status
+        'scan_port': port,
+        'scan_protocol': protocol,
+        'port_status': status
     }
+    response_text = f"you_ip: {client_ip}\n"
+    response_text += f"scan_port: {port}\n"
+    response_text += f"scan_protocol: {protocol}\n"
+    response_text += f"port_status: {status}\n"
 
     if confirmation_data:
         response['confirmation_data'] = confirmation_data
+        response_text += f"confirmation_data: {confirmation_data}\n"
 
-    return Response(json.dumps(response, indent=4), mimetype='application/json')
+    if output_format == 'json':
+        json_response = json.dumps(response, indent=4) + "\n"
+        return Response(json_response, mimetype='application/json')
+    else:
+        return Response(response_text, mimetype='text/plain')
 
 if __name__ == '__main__':
     app.run(debug=True)
