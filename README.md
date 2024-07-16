@@ -15,11 +15,13 @@
 
 # Port checker - General
 
-This project implements a "port checker" service in Python, designed to verify\
-the accessibility of a port from the internet. It is useful for determining\
-if your port is accessible from the external internet. The port check can only\
-be performed on the IP address of the device from which the request is made.\
-**Setting a different IP address for the check is not supported.**
+## Why This Project is Useful for You
+
+This project helps verify if your port is accessible from the external internet. It implements a "port checker" service in Python.
+
+## IP Address Limitations
+
+The port check can only be performed on the IP address of the device from which the request is made (only your current own external IP). **Setting a different IP address for the check is not supported.**
 
 Usage Example (SSH):\
 The tool can be used to check port accessibility, ensuring that specific ports\
