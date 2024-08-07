@@ -8,10 +8,12 @@
     - [1.2. Downloading the Repository](#12-downloading-the-repository)
       - [Clone the Repository via git](#clone-the-repository-via-git)
       - [Download as ZIP file](#download-as-zip-file)
-    - [1.3. Docker](#13-docker)
-      - [Deployment](#deployment)
-      - [Updating the Port Checker Application](#updating-the-port-checker-application)
-      - [Re-run Container After Local Code Changes](#re-run-container-after-local-code-changes)
+    - [1.3. Variants use](#13-variants-use)
+      - [Local Testing](#local-testing)
+      - [Docker](#docker)
+        - [Deployment](#deployment)
+        - [Updating the Port Checker Application](#updating-the-port-checker-application)
+        - [Re-run Container After Local Code Changes](#re-run-container-after-local-code-changes)
   - [2. Usage](#2-usage)
     - [2.1. Port Accessibility Check](#21-port-accessibility-check)
     - [2.2. Use confirmation\_data](#22-use-confirmation_data)
@@ -163,9 +165,14 @@ Then install next software (Tested on Ubuntu 22.04):
 
 ```console
 [usr@srv] $ sudo apt install python3-pip
+[usr@srv] $ pip install scapy
+```
+
+Then if you want use this solution like server with remote requests:
+
+```console
 [usr@srv] $ pip install flask
 [usr@srv] $ pip install gunicorn
-[usr@srv] $ pip install scapy
 ```
 
 This setup ensures that all necessary tools and configurations are in place for a secure and efficient development environment.
@@ -194,9 +201,25 @@ Simply navigate to the repository's page here and click on the "Code" button.\
 Then select "Download ZIP" to save the ZIP file to your computer.\
 After downloading, extract the contents of the ZIP file to access the repository files.
 
-### 1.3. Docker
+### 1.3. Variants use
 
-#### Deployment
+#### Local Testing
+For experimenting and debugging, use the lab file.
+
+Note: Scapy requires access to raw sockets on the OS,\
+which means you will need root/sudo privileges to run the code.
+
+```console
+$ sudo -E python3 lab.py
+Testing IP: 192.168.1.1
+Testing Port: 80
+TCP Port Test Result: Reachable
+UDP Port Test Result: Reachable or Filtered
+```
+
+#### Docker
+
+##### Deployment
 
 ```console
 [usr@srv] $ cd port-checker
@@ -222,7 +245,7 @@ If the startup is successful, you should see the last line as "Booting worker ..
 [2024-07-10 22:17:11 +0000] [7] [INFO] Booting worker with pid: 7
 ```
 
-#### Updating the Port Checker Application
+##### Updating the Port Checker Application
 
 To update the Port Checker application, follow these steps:
 
@@ -231,8 +254,8 @@ To update the Port Checker application, follow these steps:
 [usr@srv] $ cd ..
 [usr@srv] $ rm -rf port-checker/
 
-[usr@srv] $ REPO_URL='https://github.com/voiduin/port-checker.git'&&\
-            GOAL_DIR_NAME='port-checker'&&\
+[usr@srv] $ REPO_URL='https://github.com/voiduin/port-checker.git' && \
+            GOAL_DIR_NAME='port-checker' && \
             git clone "${REPO_URL}" "${GOAL_DIR_NAME}"
 
 [usr@srv] $ cd port-checker
@@ -244,7 +267,7 @@ This sequence stops the current running container, removes the old\
 application directory, clones the latest version from the repository, and\
 builds and runs the updated Docker container.
 
-#### Re-run Container After Local Code Changes
+##### Re-run Container After Local Code Changes
 
 To update and restart a Docker container after making local code changes, follow these steps to ensure that your changes are reflected in the containerized application. This process involves stopping and removing the current container, rebuilding the Docker image, and running the new image as a new container.
 
