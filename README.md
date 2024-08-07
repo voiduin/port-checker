@@ -1,4 +1,6 @@
 - [Port checker - General](#port-checker---general)
+  - [Why This Project is Useful for You](#why-this-project-is-useful-for-you)
+  - [IP Address Limitations](#ip-address-limitations)
   - [1. Deployment](#1-deployment)
     - [1.1. Requirements](#11-requirements)
       - [Initial Server Setup](#initial-server-setup)
@@ -9,9 +11,11 @@
     - [1.3. Docker](#13-docker)
       - [Deployment](#deployment)
       - [Updating the Port Checker Application](#updating-the-port-checker-application)
+      - [Re-run Container After Local Code Changes](#re-run-container-after-local-code-changes)
   - [2. Usage](#2-usage)
     - [2.1. Port Accessibility Check](#21-port-accessibility-check)
-    - [2.2. Rate limiting error](#22-rate-limiting-error)
+    - [2.2. Use confirmation\_data](#22-use-confirmation_data)
+    - [2.3. Rate limiting error](#23-rate-limiting-error)
 
 # Port checker - General
 
@@ -197,13 +201,13 @@ After downloading, extract the contents of the ZIP file to access the repository
 ```console
 [usr@srv] $ cd port-checker
 [usr@srv] $ docker build -t port-checker-app .
-[usr@srv] $ docker run -d -p 8000:8000 port-checker-app
+[usr@srv] $ docker run -d -p 8000:8000 --name port-checker port-checker-app
 ```
 
 Checking Container Logs
 
 ```console
-[usr@srv] $ docker ps
+[usr@srv] $ docker ps | grep port-checker-app
     # See your docker container id
 
 [usr@srv] $ docker logs <!container_id!>
@@ -223,8 +227,7 @@ If the startup is successful, you should see the last line as "Booting worker ..
 To update the Port Checker application, follow these steps:
 
 ```console
-[usr@srv] $ docker ps | grep port-checker-app
-[usr@srv] $ docker stop 2e30ef65a47d
+[usr@srv] $ docker stop port-checker
 [usr@srv] $ cd ..
 [usr@srv] $ rm -rf port-checker/
 
@@ -234,12 +237,26 @@ To update the Port Checker application, follow these steps:
 
 [usr@srv] $ cd port-checker
 [usr@srv] $ docker build -t port-checker-app .
-[usr@srv] $ docker run -d -p 8000:8000 port-checker-app
+[usr@srv] $ docker run -d -p 8000:8000 --name port-checker port-checker-app
 ```
 
 This sequence stops the current running container, removes the old\
 application directory, clones the latest version from the repository, and\
 builds and runs the updated Docker container.
+
+#### Re-run Container After Local Code Changes
+
+To update and restart a Docker container after making local code changes, follow these steps to ensure that your changes are reflected in the containerized application. This process involves stopping and removing the current container, rebuilding the Docker image, and running the new image as a new container.
+
+```console
+[usr@srv] $ docker stop port-checker
+[usr@srv] $ docker rm port-checker
+[usr@srv] $ docker build -t port-checker-app .
+[usr@srv] $ docker run -d -p 8000:8000 --name port-checker port-checker-app
+[usr@srv] $ docker logs port-checker
+```
+
+This sequence of commands ensures that your Docker environment is updated with the latest version of your application, reflecting any changes you've made in the code. It's essential to use this approach in development environments for testing and verification before deploying to production.
 
 ## 2. Usage
 
@@ -280,7 +297,34 @@ port_status: Filtered
 }
 ```
 
-### 2.2. Rate limiting error
+### 2.2. Use confirmation_data
+
+Setting up a UDP Port Listener on the Client:
+Run the following command to start a UDP port listener that continuously sends back a specified response when it receives a request:
+
+```bash
+[usr@client] $ while true; do echo "3jfk66" | nc -l -u -p 3001; done
+```
+
+Sending a Request to the Server:
+Use the following curl command to send a request to the server. The server will then check the specified UDP port and receive data from the client listener:
+
+```bash
+[usr@client] $ curl -Ls "${CHECK_SERVER_ADDR}:8000/check_port?port=3001&protocol=udp&confirmation_data=3jfk66"
+{
+    "you_ip": "<!CLIENT_IP!>",
+    "scan_port": "3001",
+    "scan_protocol": "udp",
+    "port_status": "Reachable",
+    "received_data": "3jfk66\n",
+    "confirmation_data": "3jfk66"
+}
+[usr@client] $ 
+```
+
+This response confirms that the server received the expected data from your client listener, validating that the UDP port is open and reachable.
+
+### 2.3. Rate limiting error
 
 For security purposes, this service allows you to check only 4 ports per\
 minute. After exceeding this limit, you will receive an error message along\
