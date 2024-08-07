@@ -204,18 +204,58 @@ After downloading, extract the contents of the ZIP file to access the repository
 ### 1.3. Variants use
 
 #### Local Testing
+
 For experimenting and debugging, use the lab file.
 
 Note: Scapy requires access to raw sockets on the OS,\
 which means you will need root/sudo privileges to run the code.
 
+**Use default configuration:**
+
+Run the script with default settings\
+(IP: 192.168.1.1, port: 80, protocol: TCP)\
+using the following command:
+
 ```console
 $ sudo -E python3 lab.py
-Testing IP: 192.168.1.1
-Testing Port: 80
-TCP Port Test Result: Reachable
-UDP Port Test Result: Reachable or Filtered
+Testing Configuration:
+  IP Address:         192.168.1.1
+  Port:               80
+  Protocol:           tcp
+  Confirmation data:  No data provided
+
+Test Result:
+  TCP Port:      Reachable
+  Received data: Not Detected
+
+$
 ```
+
+**Specify custom configurations via command-line flags:**
+
+You can also specify custom IP, port, and protocol to test different\
+scenarios. For example, to test the accessibility of port 80 on example.com\
+using TCP, use the command below:
+
+```console
+$ sudo -E python3 lab.py --ip 93.184.215.14 --port 80 --protocol tcp
+Testing Configuration:
+  IP Address:         93.184.215.14
+  Port:               80
+  Protocol:           tcp
+  Confirmation data:  No data provided
+
+Test Result:
+  TCP Port:      Reachable
+  Received data: Not Detected
+
+$
+```
+
+This command modifies the IP address, port, and protocol according to the\
+parameters provided. Adjust these parameters to test various network\
+configurations and ensure that your network rules and firewall settings\
+are appropriately configured.
 
 #### Docker
 
