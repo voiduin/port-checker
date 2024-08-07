@@ -17,6 +17,8 @@
   - [2. Usage](#2-usage)
     - [2.1. Port Accessibility Check](#21-port-accessibility-check)
     - [2.2. Use confirmation\_data](#22-use-confirmation_data)
+      - [Setting up Port listener](#setting-up-port-listener)
+      - [Sending a Request to the Server](#sending-a-request-to-the-server)
     - [2.3. Rate limiting error](#23-rate-limiting-error)
 
 # Port checker - General
@@ -362,15 +364,31 @@ port_status: Filtered
 
 ### 2.2. Use confirmation_data
 
-Setting up a UDP Port Listener on the Client:
+#### Setting up Port listener
+
+**TCP**
+
+Setting up a TCP Port Listener on the Client:\
+Note: use flag `-n` for prevent echo new line after str.
+
+```bash
+[usr@client] $ echo -n '3jfk66' | nc -l -p 40001
+```
+
+**UDP**
+
+Setting up a UDP Port Listener on the Client:\
 Run the following command to start a UDP port listener that continuously sends back a specified response when it receives a request:
 
 ```bash
 [usr@client] $ while true; do echo "3jfk66" | nc -l -u -p 3001; done
 ```
 
-Sending a Request to the Server:
+#### Sending a Request to the Server
+
 Use the following curl command to send a request to the server. The server will then check the specified UDP port and receive data from the client listener:
+
+**UDP**
 
 ```bash
 [usr@client] $ curl -Ls "${CHECK_SERVER_ADDR}:8000/check_port?port=3001&protocol=udp&confirmation_data=3jfk66"
