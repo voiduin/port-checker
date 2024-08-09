@@ -4,9 +4,15 @@ from typing import Optional, Tuple
 
 from scapy.all import IP, TCP, UDP, Raw, send, sniff, sr1
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s - %(levelname)s - %(message)s')
 
-def check_tcp_port(ip: str, port: int, confirmation_data: Optional[str] = None) -> Tuple[str, Optional[str]]:
+def check_tcp_port(
+            ip: str,
+            port: int,
+            confirmation_data: Optional[str] = None
+            ) -> Tuple[str, Optional[str]]:
     logging.info(f"Checking TCP port {port} on IP {ip} with confirmation data: {confirmation_data}")
 
     if confirmation_data:
@@ -37,7 +43,11 @@ def check_tcp_port(ip: str, port: int, confirmation_data: Optional[str] = None) 
         else:
             return ("Unreachable", None)
 
-def check_udp_port(ip, port, confirmation_data=None):
+def check_udp_port(
+            ip: str,
+            port: int,
+            confirmation_data: Optional[str] = None
+            ) -> Tuple[str, Optional[str]]:
     logging.info(f"Checking UDP port {port} on IP {ip} with confirmation data: {confirmation_data}")
     pkt = IP(dst=ip)/UDP(dport=int(port))
     received_data = None
@@ -67,7 +77,12 @@ def check_udp_port(ip, port, confirmation_data=None):
         logging.info(f"Port {port} on IP {ip} is unreachable")
         return "Unreachable", received_data
 
-def check_port(ip, port, protocol, confirmation_data=None):
+def check_port(
+            ip: str,
+            port: int,
+            protocol: str,
+            confirmation_data: Optional[str] = None
+            ) -> Tuple[str, Optional[str]]:
     logging.info(f"Checking port {port} with protocol {protocol} on IP {ip}")
     if protocol == 'tcp':
         status, received_data = check_tcp_port(ip, port, confirmation_data)

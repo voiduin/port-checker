@@ -14,7 +14,6 @@ app = Flask(__name__)
 # Dictionary to track request times by IP
 request_times = defaultdict(list)
 
-
 def is_rate_limited(ip):
     now = datetime.now()
     one_minute_ago = now - timedelta(minutes=1)
