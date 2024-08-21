@@ -16,13 +16,19 @@ def check_tcp_port(
     logging.info(f"Checking TCP port {port} on IP {ip} with confirmation data: {confirmation_data}")
 
     if confirmation_data:
-        # Use socket lib for check with full connect
+        # TCP port open scanning with confirmation_data - use "socket" lib
+        #   Used for check with establishing a full connection
+        #   This needed only if we need get conf.data
         try:
             with socket(AF_INET, SOCK_STREAM) as s:
                 s.connect((ip, port))
-                s.sendall(confirmation_data.encode())
-                data = s.recv(1024)
-                received_data = data.decode()
+                # Send confirmation data to goal checked client port
+                data = confirmation_data.encode()
+                s.sendall(data)
+
+                # Receive data from client for validation
+                response = s.recv(1024)
+                received_data = response.decode()
 
                 if received_data == confirmation_data:
                     return ("Reachable and Verified", received_data)
@@ -32,8 +38,9 @@ def check_tcp_port(
             logging.error(f"Error connecting to {ip}:{port} with error: {str(e)}")
             return ("Not Reachable", None)
     else:
-        # Use scapy lib for check without connection
-        # Send SYN packet and wait SYN-ACK
+        # TCP port half-open scanning (SYN scanning) - use "scapy" lib
+        #   Used for determine the state of a communications port without establishing a full connection
+        #   Send SYN packet and wait SYN-ACK
         syn_packet = IP(dst=ip)/TCP(dport=int(port), flags="S")
         response = sr1(syn_packet, timeout=1, verbose=0)
         if response is None:
